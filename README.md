@@ -1,187 +1,302 @@
-# Sistema de Contas Bancárias em COBOL com ODBC
+# 🚀 Projeto 6 – Processamento de Transações Bancárias com COBOL, ODBC e MySQL
 
-Projeto desenvolvido por **Andrey Dias Ferreira** para fins acadêmicos e preparação para atuação em ambiente Mainframe.
+![COBOL](https://img.shields.io/badge/COBOL-GnuCOBOL-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
+![ODBC](https://img.shields.io/badge/ODBC-Connector-green)
+![Status](https://img.shields.io/badge/Status-Concluído-success)
 
-## Objetivo
+---
 
-Este projeto implementa um sistema batch em COBOL para processamento de clientes e transações bancárias, conforme o Projeto 6 - Semana 8.
+## 👨‍💻 Autor
 
-O sistema realiza:
+**Andrey Dias Ferreira**
 
-- leitura de arquivo de clientes;
-- leitura de arquivo de transações;
-- validação das regras de negócio;
-- atualização lógica de saldos em memória;
-- geração de arquivo de saída com status dos registros;
-- geração de arquivo de erros;
-- criação de estrutura de banco de dados MySQL;
-- configuração de conexão ODBC;
-- criação de JCL de treinamento.
+Projeto desenvolvido para fins de preparação para atuação em ambientes Mainframe e processamento corporativo utilizando COBOL.
 
-## Tecnologias utilizadas
+---
 
-- COBOL
-- GnuCOBOL 2.0
-- OpenCobolIDE 4.7.6
-- MySQL 8.0
-- MySQL Connector/ODBC
-- Windows
-- JCL para documentação e treinamento
+# 📋 Objetivo
 
-## Estrutura do projeto
+Desenvolver um sistema de processamento de transações bancárias utilizando COBOL, realizando:
+
+✅ Leitura de clientes
+
+✅ Leitura de transações
+
+✅ Processamento de movimentações
+
+✅ Geração de arquivos de saída
+
+✅ Registro de erros
+
+✅ Integração com banco de dados MySQL via ODBC
+
+---
+
+# 🛠 Tecnologias Utilizadas
+
+| Tecnologia | Utilização |
+|------------|------------|
+| COBOL (GnuCOBOL) | Processamento principal |
+| OpenCobolIDE | Desenvolvimento |
+| Python | Integração ODBC |
+| PyODBC | Comunicação com banco |
+| MySQL Server | Banco de dados |
+| MySQL Workbench | Administração |
+| ODBC Connector | Conexão |
+| GitHub | Versionamento |
+| JCL | Simulação Mainframe |
+
+---
+
+# 📁 Estrutura do Projeto
 
 ```text
-PROJETO6-COBOL-ODBC/
+Projeto6-COBOL-ODBC
 │
-├── COBOL/
+├── COBOL
 │   ├── PROJ6CLI.cbl
 │   └── PROJ6MOV.cbl
 │
-├── DADOS/
+├── DADOS
 │   ├── CLIENTES.TXT
 │   ├── TRANSACOES.TXT
 │   ├── SAIDA.TXT
 │   └── ERROS.TXT
 │
-├── SQL/
-│   └── banco.sql
+├── SQL
+│   ├── banco.sql
+│   ├── teste_odbc.py
+│   └── integrador_odbc.py
 │
-├── JCL/
-│   └── PROJ6.jcl
+├── JCL
+│   └── PROJ6.JCL
 │
-└── PRINTS/
-    ├── 01_ODBC_OK.jpg
-    ├── 02_BANCO_E_TABELAS.png
-    ├── 03_CLIENTES.png
-    ├── 04_TRANSACOES.png
-    ├── 05_PROJ6CLI_EXECUTANDO.png
-    ├── 06_PROJ6MOV_EXECUTANDO.png
-    ├── 07_SAIDA_TXT.png
-    ├── 08_ERROS_TXT.png
-    └── 09_ESTRUTURA_PROJETO.png
+├── PRINTS
+│   ├── ODBC_OK.png
+│   ├── CLIENTES.png
+│   ├── TRANSACOES.png
+│   ├── ERROS.png
+│   ├── PROJ6CLI.png
+│   └── PROJ6MOV.png
+│
+└── README.md
 ```
 
-## Programas COBOL
+---
 
-### PROJ6CLI.cbl
+# 🗄 Banco de Dados
 
-Programa responsável por ler o arquivo `CLIENTES.TXT` e exibir os clientes processados.
+## CLIENTES
 
-### PROJ6MOV.cbl
+```sql
+CREATE TABLE CLIENTES (
+    CLI_ID INTEGER NOT NULL,
+    CLI_NOME VARCHAR(30),
+    CLI_SALDO DECIMAL(9,0),
+    DT_ATUALIZACAO DATE,
+    PRIMARY KEY (CLI_ID)
+);
+```
 
-Programa responsável por:
+## TRANSACOES
 
-- carregar clientes em memória;
-- ler o arquivo `TRANSACOES.TXT`;
-- localizar o cliente;
-- validar tipo da transação;
-- validar valor zerado;
-- validar saldo suficiente para saque;
-- atualizar saldo em memória;
-- gerar `SAIDA.TXT`;
-- gerar `ERROS.TXT`.
+```sql
+CREATE TABLE TRANSACOES (
+    TRX_ID INTEGER NOT NULL,
+    CLI_ID INTEGER NOT NULL,
+    TRX_TIPO CHAR(1) NOT NULL,
+    TRX_VALOR DECIMAL(9,0) NOT NULL,
+    DT_PROCESSAMENTO DATE,
+    PRIMARY KEY (TRX_ID)
+);
+```
 
-## Arquivos de entrada
+## ERROS_PROCESSAMENTO
 
-### CLIENTES.TXT
+```sql
+CREATE TABLE ERROS_PROCESSAMENTO (
+    ID_ERRO INTEGER AUTO_INCREMENT,
+    CLI_ID INTEGER,
+    DESCRICAO_ERRO VARCHAR(100),
+    DT_OCORRENCIA TIMESTAMP,
+    PRIMARY KEY (ID_ERRO)
+);
+```
+
+---
+
+# 🔄 Fluxo do Sistema
 
 ```text
-00123JOAO SILVA                    000010000
-00456MARIA SOUZA                   000025000
-00789CARLOS PEREIRA                000005000
+CLIENTES.TXT
+      │
+      ▼
+PROJ6CLI.CBL
+      │
+      ▼
+Leitura dos Clientes
+      │
+      ▼
+TRANSACOES.TXT
+      │
+      ▼
+PROJ6MOV.CBL
+      │
+      ├── SAIDA.TXT
+      └── ERROS.TXT
+      │
+      ▼
+integrador_odbc.py
+      │
+      ▼
+ODBC
+      │
+      ▼
+MySQL
 ```
 
-### TRANSACOES.TXT
+---
+
+# 📊 Resultados Obtidos
+
+## Clientes Processados
+
+| ID | Cliente | Saldo |
+|----|----------|---------|
+| 123 | JOAO SILVA | 10000 |
+| 456 | MARIA SOUZA | 25000 |
+| 789 | CARLOS PEREIRA | 5000 |
+
+---
+
+## Transações Processadas
+
+| TRX_ID | CLI_ID | Tipo | Valor |
+|---------|---------|------|---------|
+| 10 | 123 | C | 500 |
+| 20 | 123 | D | 200 |
+| 30 | 456 | D | 1000 |
+| 40 | 789 | D | 20000 |
+
+---
+
+# 📄 Arquivo SAIDA.TXT
 
 ```text
-0012300010C000000500
-0012300020D000000200
-0045600030D000001000
-0078900040D000020000
+OK - SAQUE - CLI_ID: 00123 VALOR: 000000500
+OK - DEPOSITO - CLI_ID: 00123 VALOR: 000000200
+OK - DEPOSITO - CLI_ID: 00456 VALOR: 000001000
+OK - DEPOSITO - CLI_ID: 00789 VALOR: 000020000
 ```
 
-## Arquivos de saída
+---
 
-### SAIDA.TXT
-
-Contém o status das transações processadas com sucesso.
-
-### ERROS.TXT
-
-Contém os erros encontrados durante o processamento. No cenário testado, o arquivo ficou vazio porque todas as transações foram processadas com sucesso.
-
-## Banco de dados
-
-O projeto original cita DB2, porém, conforme orientação recebida, foi utilizada uma execução via IDE com banco MySQL e conexão ODBC.
-
-Banco criado:
+# 📄 Arquivo ERROS.TXT
 
 ```text
-projeto_cobol
+Nenhum erro encontrado.
 ```
 
-Tabelas criadas:
+---
 
-- CLIENTES
-- TRANSACOES
-- ERROS_PROCESSAMENTO
+# 🔌 Integração ODBC
 
-O script está disponível em:
-
-```text
-SQL/banco.sql
-```
-
-## ODBC
-
-Foi configurado um DSN de sistema chamado:
+Fonte de Dados configurada:
 
 ```text
 BANCOCOBOL
 ```
 
-Configuração utilizada:
+Parâmetros:
 
 ```text
-Servidor: localhost
-Porta: 3306
-Banco: projeto_cobol
-Usuário: root
-Driver: MySQL ODBC Unicode Driver
+Servidor : localhost
+Porta    : 3306
+Banco    : projeto_cobol
+Driver   : MySQL ODBC Connector 8.x
 ```
 
-A conexão foi testada com sucesso, conforme print disponível na pasta `PRINTS`.
+### Teste realizado com sucesso
 
-## JCL
+✅ Conexão ODBC validada
 
-O arquivo `JCL/PROJ6.jcl` foi criado para treinamento e documentação, simulando uma execução em ambiente mainframe.
+✅ Leitura do banco funcionando
 
-A execução real do projeto foi feita no OpenCobolIDE, conforme orientação recebida.
+✅ Integração concluída
 
-## Como executar
+---
 
-1. Criar a pasta `C:\COBOL`.
-2. Copiar os arquivos de entrada para `C:\COBOL`.
-3. Abrir `PROJ6CLI.cbl` no OpenCobolIDE.
-4. Executar o programa.
-5. Abrir `PROJ6MOV.cbl` no OpenCobolIDE.
-6. Executar o programa.
-7. Verificar os arquivos gerados:
-   - `SAIDA.TXT`
-   - `ERROS.TXT`
+# 📸 Evidências
 
-## Evidências
+## Configuração ODBC
 
-A pasta `PRINTS` contém as evidências de:
+Adicione aqui:
 
-- conexão ODBC funcionando;
-- banco MySQL criado;
-- tabelas criadas;
-- dados cadastrados;
-- execução dos programas COBOL;
-- arquivos de saída gerados;
-- estrutura final do projeto.
+```text
+PRINTS/ODBC_OK.png
+```
 
-## Observação
+## Clientes carregados
 
-A integração direta entre COBOL e banco de dados via ODBC foi preparada no ambiente por meio da criação do DSN `BANCOCOBOL`. A execução principal do processamento foi realizada via arquivos, mantendo o comportamento batch solicitado no projeto.
+```text
+PRINTS/CLIENTES.png
+```
+
+## Transações processadas
+
+```text
+PRINTS/TRANSACOES.png
+```
+
+## Execução COBOL
+
+```text
+PRINTS/PROJ6CLI.png
+PRINTS/PROJ6MOV.png
+```
+
+---
+
+# 🖥 Simulação Mainframe
+
+Também foi criado um JCL para treinamento e adaptação do projeto para ambientes Mainframe.
+
+```jcl
+//JOBNAME JOB ...
+//STEP01 EXEC PGM=PROJ6CLI
+//STEP02 EXEC PGM=PROJ6MOV
+```
+
+> Conforme orientação da disciplina, o JCL foi desenvolvido para fins de prática e não necessita ser executado.
+
+---
+
+# ✅ Conclusão
+
+O projeto demonstra a integração entre:
+
+- COBOL
+- Processamento de Arquivos
+- ODBC
+- Banco de Dados MySQL
+- Simulação Mainframe com JCL
+- Versionamento GitHub
+
+Representando um fluxo corporativo de processamento de transações bancárias semelhante ao encontrado em ambientes empresariais.
+
+---
+
+## 🎯 Status Final
+
+| Item | Status |
+|--------|---------|
+| COBOL | ✅ |
+| Processamento de Arquivos | ✅ |
+| MySQL | ✅ |
+| ODBC | ✅ |
+| JCL | ✅ |
+| GitHub | ✅ |
+| Documentação | ✅ |
+
+### ✔ Projeto Concluído
